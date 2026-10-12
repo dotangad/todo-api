@@ -13,6 +13,46 @@ bun run dev
 
 The database is created automatically at `todos.sqlite`. Override with `TODO_DATABASE_PATH=/path/to/todos.sqlite`.
 
+## Production deployment
+
+The production app runs as the per-user systemd service `todo-api.service`. It listens only on `127.0.0.1:3011`; Tailscale Serve terminates HTTPS and exposes it to the tailnet at:
+
+```text
+https://intelmba.tailbf891e.ts.net:3011/
+```
+
+The service unit is at `~/.config/systemd/user/todo-api.service`. The SQLite database is `/home/angad/todo-api/todos.sqlite` and is ignored by Git.
+
+### Deploy an update
+
+After pulling changes, install dependencies, validate, build the browser bundle, and restart the service:
+
+```bash
+cd /home/angad/todo-api
+git pull
+bun install
+bun run typecheck
+bun run build
+systemctl --user restart todo-api.service
+```
+
+Verify the local service and the HTTPS endpoint:
+
+```bash
+systemctl --user status todo-api.service
+curl -k https://intelmba.tailbf891e.ts.net:3011/healthcheck
+tailscale serve status
+```
+
+Useful operations:
+
+```bash
+journalctl --user -u todo-api.service -f  # Follow logs
+systemctl --user restart todo-api.service
+systemctl --user stop todo-api.service
+systemctl --user start todo-api.service
+```
+
 ## Code quality
 
 [Biome](https://biomejs.dev/) handles formatting and linting (including import sorting) without ESLint or Prettier:
