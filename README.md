@@ -2,8 +2,6 @@
 
 Bun + Hono REST API backed by SQLite.
 
-For agents scheduling tasks through the running API, see [AGENTS.md](AGENTS.md).
-
 ## Run
 
 ```bash
@@ -18,10 +16,10 @@ The database is created automatically at `todos.sqlite`. Override with `TODO_DAT
 The production app runs as the per-user systemd service `todo-api.service`. It listens only on `127.0.0.1:3011`; Tailscale Serve terminates HTTPS and exposes it to the tailnet at:
 
 ```text
-https://intelmba.tailbf891e.ts.net:3011/
+https://URL:3011/
 ```
 
-The service unit is at `~/.config/systemd/user/todo-api.service`. The SQLite database is `/home/angad/todo-api/todos.sqlite` and is ignored by Git.
+The service unit is at `~/.config/systemd/user/todo-api.service`. The SQLite database is `todo-api/todos.sqlite` and is ignored by Git.
 
 ### Deploy an update
 
@@ -40,7 +38,7 @@ Verify the local service and the HTTPS endpoint:
 
 ```bash
 systemctl --user status todo-api.service
-curl -k https://intelmba.tailbf891e.ts.net:3011/healthcheck
+curl -k http://127.0.0.1:3011/healthcheck
 tailscale serve status
 ```
 
@@ -62,14 +60,6 @@ bun run check      # Check formatting and lint rules
 bun run fix        # Apply formatting and safe fixes
 bun run typecheck  # TypeScript checks
 ```
-
-### Neovim
-
-Your existing Biome LSP configuration detects `biome.json` and runs the project's
-`node_modules/.bin/biome`. After `bun install`, reopen a file in this project:
-formatting runs on save, `<leader>cf` formats manually, `<leader>cF` applies
-lint fixes, and `<leader>co` organizes imports. Use
-`:lua vim.print(vim.lsp.get_clients({bufnr = 0}))` to confirm that `biome` is attached.
 
 ## Frontend
 
