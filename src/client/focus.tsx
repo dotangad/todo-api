@@ -292,9 +292,6 @@ function FocusApp() {
       <div class="mx-auto max-w-5xl">
         <header class="mb-12 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p class="m-0 text-xs font-bold tracking-[0.2em] text-[#bbbcb6] uppercase">
-              Personal workspace
-            </p>
             <h1 class="mt-2 mb-0 text-3xl font-semibold tracking-tight">
               Focus mode
             </h1>

@@ -31,6 +31,7 @@ export function TodoCard({ todo }: { todo: Todo }) {
           <button
             type="button"
             class={cn('todo-title', { done: todo.completed })}
+            title={todo.title}
             onClick={() => openEditor(todo.id)}
           >
             {todo.title}

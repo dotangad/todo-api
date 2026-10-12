@@ -39,7 +39,6 @@ export function App() {
     <>
       <header class="topbar">
         <div>
-          <p class="eyebrow">PERSONAL WORKSPACE</p>
           <h1>Todos</h1>
         </div>
         <div class="flex items-center gap-2">

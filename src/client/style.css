@@ -84,7 +84,9 @@ h1 {
   padding-bottom: 0.5rem;
 }
 .board-scroll {
-  min-width: 0;
+  --board-gutter: clamp(1rem, 2vw, 2rem);
+  width: calc(100vw - 2 * var(--board-gutter));
+  margin-left: calc(50% - 50vw + var(--board-gutter));
   overflow-x: auto;
   contain: paint;
 }
@@ -352,7 +354,7 @@ i {
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(7, minmax(340px, 1fr));
+  grid-template-columns: repeat(7, 320px);
   gap: 0.75rem;
   width: max-content;
   padding-bottom: 0.5rem;
@@ -396,6 +398,9 @@ i {
   gap: 0.5rem;
   font-size: 0.9rem;
   font-weight: 600;
+}
+.card .todo-title {
+  flex: 1;
 }
 .card-checkbox {
   flex-shrink: 0;
@@ -609,8 +614,7 @@ button:disabled {
     border-radius: 0;
   }
   .board {
-    grid-template-columns: repeat(7, minmax(78vw, 1fr));
-    min-width: 560vw;
+    grid-template-columns: repeat(7, min(78vw, 320px));
   }
   .day-column {
     min-height: 55vh;

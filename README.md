@@ -93,8 +93,10 @@ match any selected tag. With no tags selected, all todos are shown. The Clear
 button resets tags, match mode, and sort. The view and controls persist in the
 URL (`view=board`, repeated `tag=`, `match=any`, `sort=schedule-asc`), so refreshes,
 hot reloads, and shared links restore the same state. Defaults are omitted; other
-query parameters and the URL fragment are preserved. The board shows the current local Sunday–Saturday week and scrolls horizontally
-without moving the view switcher or filters; unscheduled todos remain in the table.
+query parameters and the URL fragment are preserved. The board shows the current
+local Sunday–Saturday week and scrolls horizontally across the page, independent
+of the width-constrained header, view switcher, filters, and table. Day columns
+have a fixed width; long card titles truncate. Unscheduled todos remain in the table.
 Cards show the optional scheduled time beside the title, with tags on the left
 and a red due date on the right when present. Only top-level todos appear in the
 table and board; subtasks remain accessible in the parent editor. Press **N**
