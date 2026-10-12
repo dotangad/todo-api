@@ -4,18 +4,30 @@
   "type": "module",
   "packageManager": "bun@1.4.0",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "bun run ./node_modules/vite/bin/vite.js --host 127.0.0.1",
     "build": "vite build",
     "start": "NODE_ENV=production bun src/serve.ts",
-    "typecheck": "tsc -p tsconfig.json && tsc -p src/client/tsconfig.json"
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "fix": "biome check --write .",
+    "typecheck": "tsc -p tsconfig.json && tsc -p src/client/tsconfig.json",
+    "test": "bun test"
   },
   "dependencies": {
+    "@preact/signals": "^2.11.3",
+    "clsx": "^2.1.1",
     "hono": "^4.13.13",
-    "jsx-dom": "^8.1.6"
+    "lucide-preact": "^1.55.0",
+    "preact": "^11.0.1",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.2",
+    "@biomejs/biome": "^2.5.15",
     "@hono/vite-dev-server": "^0.26.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/bun": "^1.4.2",
+    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.2"
   }

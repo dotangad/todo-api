@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "jsxImportSource": "jsx-dom",
+    "jsxImportSource": "preact",
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
     "rootDir": ".."

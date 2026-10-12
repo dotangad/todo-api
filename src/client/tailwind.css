@@ -1,0 +1,16 @@
+@layer theme, base, components, utilities;
+
+/* Keep the existing browser defaults: intentionally omit Tailwind Preflight. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "./style.css" layer(components);
+@import "tailwindcss/utilities.css" layer(utilities) source("..");
+
+/* Match the existing UI rather than introducing a new palette. */
+@theme {
+  --color-ink: #252525;
+  --color-canvas: #f7f7f5;
+  --color-muted: #777;
+  --color-danger: #ad3131;
+  --color-success: #dff1e4;
+  --color-success-foreground: #346b49;
+}
