@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+public/
+src/**/*.js
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# SQLite databases
+todos.sqlite
+todos.sqlite-*
+*.sqlite
+*.sqlite-*
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Editor and OS files
+.DS_Store
+.vscode/
+.idea/

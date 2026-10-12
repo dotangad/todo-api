@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsxImportSource": "jsx-dom",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "rootDir": ".."
+  },
+  "exclude": [],
+  "include": ["./**/*.ts", "./**/*.tsx"]
+}
