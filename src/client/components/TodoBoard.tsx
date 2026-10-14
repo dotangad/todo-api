@@ -5,6 +5,7 @@ import { TodoCard } from './TodoCard'
 
 export function TodoBoard() {
   const todos = visibleTodos.value
+  console.log(todos.map((x) => x.scheduleTime))
   return (
     <div class="board-scroll">
       <section class="board" aria-label="Scheduled todos board">
@@ -32,9 +33,17 @@ export function TodoBoard() {
                 <span>{scheduled.length}</span>
               </header>
               <div class="drop-zone">
-                {scheduled.map((todo) => (
-                  <TodoCard key={todo.id} todo={todo} />
-                ))}
+                {/* TODOs without a scheduleTime are displayed below scheduled TODOs */}
+                {scheduled
+                  .filter((x) => !!x.scheduleTime)
+                  .map((todo) => (
+                    <TodoCard key={todo.id} todo={todo} />
+                  ))}
+                {scheduled
+                  .filter((x) => !x.scheduleTime)
+                  .map((todo) => (
+                    <TodoCard key={todo.id} todo={todo} />
+                  ))}
               </div>
             </section>
           )
