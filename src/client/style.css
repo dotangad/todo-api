@@ -316,7 +316,8 @@ h1 {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.done {
+.done,
+.subtask input.done {
   color: #999;
   text-decoration: line-through;
 }

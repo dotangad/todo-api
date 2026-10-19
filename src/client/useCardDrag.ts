@@ -10,7 +10,7 @@ type TouchDrag = {
   zone: HTMLElement | null
 }
 
-export function useCardDrag(id: string) {
+export function useCardDrag(id: string, enabled = true) {
   const [dragging, setDragging] = useState(false)
   const touch = useRef<TouchDrag | null>(null)
   const ignoreClickUntil = useRef(0)
@@ -24,7 +24,7 @@ export function useCardDrag(id: string) {
 
   const handlers: JSX.IntrinsicElements['article'] = {
     onDragStart(event) {
-      if (saving.value || !event.dataTransfer) {
+      if (!enabled || saving.value || !event.dataTransfer) {
         event.preventDefault()
         return
       }
@@ -38,6 +38,7 @@ export function useCardDrag(id: string) {
     },
     onPointerDown(event) {
       if (
+        !enabled ||
         saving.value ||
         event.pointerType === 'mouse' ||
         (event.target as HTMLElement).closest('input,button')
@@ -77,7 +78,7 @@ export function useCardDrag(id: string) {
       clearTouch()
       if (event.currentTarget.hasPointerCapture(event.pointerId))
         event.currentTarget.releasePointerCapture(event.pointerId)
-      if (day) void updateTodo(id, { scheduleDate: day })
+      if (day && enabled) void updateTodo(id, { scheduleDate: day })
     },
     onPointerCancel: clearTouch,
     onLostPointerCapture: clearTouch,

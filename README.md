@@ -77,16 +77,20 @@ Components read signals directly and Preact updates the DOM. Form drafts stay in
 local component state, so updating a subtask doesn't erase unsaved parent edits.
 Editing uses native `<dialog>`; delete confirmation opens a second dialog above
 it. Escape closes the top dialog. There is no custom modal stack or portal library.
-The view switcher sits beside the tag and sort controls. Select multiple tags in
+The view switcher sits beside the status, tag, and sort controls. Select multiple tags in
 the popover and use `&` to require every selected tag (the default) or `Ⅱ` to
 match any selected tag. With no tags selected, all todos are shown. The Clear
-button resets tags, match mode, and sort. The view and controls persist in the
-URL (`view=board`, repeated `tag=`, `match=any`, `sort=schedule-asc`), so refreshes,
+button resets status, tags, match mode, and sort. The view and controls persist in the
+URL (`view=board`, repeated `tag=`, `match=any`, `sort=schedule-asc`, `status=open`), so refreshes,
 hot reloads, and shared links restore the same state. Defaults are omitted; other
-query parameters and the URL fragment are preserved. The board shows the current
-local Sunday–Saturday week and scrolls horizontally across the page, independent
-of the width-constrained header, view switcher, filters, and table. Day columns
-have a fixed width; long card titles truncate. Unscheduled todos remain in the table.
+query parameters and the URL fragment are preserved. The board starts on the current
+local Sunday–Saturday week; its week switcher (only shown in board view) navigates
+back and forward or returns to TODAY. Selected weeks persist as `week=YYYY-MM-DD`
+(the week's Sunday) even when switching to table view. The board scrolls horizontally
+across the page, independent of the width-constrained header, view switcher, filters,
+and table. Day columns have a fixed width; long card titles truncate. Todos with a due
+date appear on their due day even if unscheduled; due-day cards cannot be dragged.
+Todos with neither a schedule nor a due date remain in the table.
 Cards show the optional scheduled time beside the title, with tags on the left
 and a red due date on the right when present. Only top-level todos appear in the
 table and board; subtasks remain accessible in the parent editor. Press **N**
@@ -126,6 +130,68 @@ class={cn('status', completed && 'bg-success text-success-foreground')}
 `cn()` combines `clsx` with `tailwind-merge`; it resolves Tailwind utility conflicts,
 not conflicts between custom CSS classes. Keep utility names complete and literal
 so Tailwind can detect them. Both client and server templates under `src/` are scanned.
+
+## Browser-console SQL
+
+On the main todos page, open browser DevTools and run:
+
+```js
+await sql('SELECT * FROM todos ORDER BY created_at DESC')
+await sql('UPDATE todos SET completed = 1 WHERE schedule_date < ? RETURNING id, title, completed', ['2026-01-01'])
+await sqlUndo()
+```
+
+These helpers are **console-only**; the app never calls them. Their implementation
+loads on first use, not with the initial bundle. Results use `console.table` and
+are also returned as `{ rows, changes, undoToken }`. Writes without `RETURNING`
+print an affected-row summary. Every query (including reads and failures) and
+executed undo re-fetches todos without resetting filters or editor drafts.
+
+SQL runs against the real server database. Use SQLite column names such as
+`parent_id`, `schedule_date`, `schedule_time`, `due_date`, `due_time`, `created_at`,
+and `updated_at`; `completed` is `0`/`1`. Tags are in `tags` and `todo_tags`.
+**Raw SQL does not apply the REST API's descendant-field propagation or update
+`updated_at` automatically. Include those changes explicitly in your query.**
+Use stable todo IDs, not implicit rowids (undo may rebuild rowids).
+
+Supported: one SELECT, INSERT, UPDATE, or DELETE statement, ordinary CTEs,
+`RETURNING`, and positional `?` parameters (string, number, boolean, or null).
+Writes may only target `todos`; reads may join `tags` and `todo_tags`. Schema
+changes, transaction commands, other tables, recursive CTEs, table-valued
+functions, and non-allowlisted scalar functions are rejected. Todo parent cycles
+and incompatible field types are rejected too. Limits: 64 KiB request bodies,
+32768 query characters, 999 parameters, 10000 rows per result/snapshot table, and
+2 MB per result/combined undo snapshot. Oversized results roll back the query.
+There is no execution timeout; avoid expensive Cartesian joins.
+
+`sqlUndo()` restores the last successful **data-changing** query, including
+cascading descendant deletions and tag links. Reads, failures, and no-op writes
+preserve that undo point. There is one undo level, no redo, and availability is
+lost on browser reload or server restart. A newer SQL write replaces the undo
+point; intervening UI/API/other-tab changes cause undo to refuse rather than
+clobber them. Focus timer state/history is never restored. Operations in the same
+page are guarded against overlap. If a write succeeds but refresh fails, do not
+repeat it: refresh the page instead. A lost network response can also leave the
+commit outcome uncertain; inspect current data before retrying.
+
+### SQL console access
+
+This is a privileged tool for a **private, single-user installation**, not a
+public SQL API. Origin checks prevent cross-site browser use but are **not
+authentication**. Keep the service private; add proper authentication before any
+public exposure. No permissive CORS is enabled.
+
+Same-origin loopback development works automatically. For Tailscale Serve or
+another trusted reverse proxy, configure the exact browser origin in the server
+environment (comma-separated if more than one):
+
+```text
+TODO_SQL_TRUSTED_ORIGINS=https://YOUR-TAILNET-HOST:3011
+```
+
+Restart the service after changing its environment. Forwarded headers are not
+trusted for authorization. Unconfigured external origins and requests without an
+Origin header are rejected, including ordinary curl requests.
 
 ## Focus mode
 

@@ -3,11 +3,14 @@ import type { Todo } from './types'
 
 export const todos = signal<Todo[]>([])
 export const view = signal<'table' | 'board'>('table')
+// Null follows the current week; a date pins the board to a specific Sunday.
+export const boardWeek = signal<string | null>(null)
 export const tagFilter = signal<string[]>([])
 export const tagMatch = signal<'all' | 'any'>('all')
 export const sortMode = signal<
   'created' | 'due-asc' | 'due-desc' | 'schedule-asc' | 'schedule-desc'
 >('created')
+export const statusMode = signal<'open' | 'done' | 'all'>('all')
 export const editorId = signal<string | null>(null) // 'new' opens an empty form.
 export const deleteId = signal<string | null>(null)
 export const saving = signal(false)
@@ -43,6 +46,8 @@ export const visibleTodos = computed(() =>
     .filter(
       (todo) =>
         todo.parentId === null &&
+        (statusMode.value === 'all' ||
+          todo.completed === (statusMode.value === 'done')) &&
         (!tagFilter.value.length ||
           (tagMatch.value === 'all'
             ? tagFilter.value.every((tag) => todo.tags.includes(tag))
@@ -91,5 +96,6 @@ export function clearFilters() {
     tagFilter.value = []
     tagMatch.value = 'all'
     sortMode.value = 'created'
+    statusMode.value = 'all'
   })
 }

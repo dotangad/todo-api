@@ -19,6 +19,19 @@ export function weekDays(today = new Date()) {
   })
 }
 
+// Accept valid calendar dates and normalize links to the start of their week.
+export function parseWeekStart(value: string | null) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const date = new Date(`${value}T12:00:00`)
+  return dateKey(date) === value ? weekDays(date)[0] : null
+}
+
+export function shiftWeek(start: string, offset: number) {
+  const date = new Date(`${start}T12:00:00`)
+  date.setDate(date.getDate() + offset * 7)
+  return dateKey(date)
+}
+
 // Format a wall-clock value without timezone conversion (including DST gaps).
 export function timeLabel(time: string, locale?: string) {
   return new Intl.DateTimeFormat(locale, {

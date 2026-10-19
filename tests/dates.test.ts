@@ -1,8 +1,25 @@
 import { describe, expect, test } from 'bun:test'
-import { dateTimeLabel, timeLabel } from '../src/client/dates'
+import {
+  dateTimeLabel,
+  parseWeekStart,
+  shiftWeek,
+  timeLabel,
+} from '../src/client/dates'
 
 const year = new Date().getFullYear()
 const date = `${year}-10-12`
+
+test('validates and normalizes a week to Sunday', () => {
+  expect(parseWeekStart('2027-01-06')).toBe('2027-01-03')
+  expect(parseWeekStart('2026-02-30')).toBeNull()
+  expect(parseWeekStart('nonsense')).toBeNull()
+})
+
+test('navigates by local calendar weeks across year and DST boundaries', () => {
+  expect(shiftWeek('2025-12-28', 1)).toBe('2026-01-04')
+  expect(shiftWeek('2026-03-08', 1)).toBe('2026-03-15')
+  expect(shiftWeek('2026-03-08', -1)).toBe('2026-03-01')
+})
 
 describe('date/time labels', () => {
   test('shows a placeholder without a date', () => {

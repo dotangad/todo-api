@@ -5,10 +5,16 @@ import { dateTimeLabel } from '../dates'
 
 export type DateTimeValue = { date: string; time: string }
 
+export type DateTimePickerStyles = {
+  class?: string
+  setClass?: string // applied if the DateTime value is set
+}
+
 type Props = DateTimeValue & {
   label: string
   disabled?: boolean
   onChange: (value: DateTimeValue) => boolean | Promise<boolean>
+  style?: DateTimePickerStyles
 }
 
 // The native popover lives in the top layer, outside table overflow clipping.
@@ -19,6 +25,7 @@ export function DateTimePicker({
   label,
   disabled = false,
   onChange,
+  style,
 }: Props) {
   const id = useId()
   const trigger = useRef<HTMLButtonElement>(null)
@@ -116,6 +123,8 @@ export function DateTimePicker({
         class={cn(
           'inline-flex max-w-full items-center gap-1.5 rounded-md border-0 bg-transparent px-1.5 py-2 text-left text-[0.85rem] font-normal tracking-normal normal-case hover:bg-[#efefec] focus-visible:outline-2 focus-visible:outline-offset-2',
           date ? 'text-[#555]' : 'text-muted',
+          date ? style?.setClass : '',
+          style?.class,
         )}
       >
         <CalendarDays size={14} class="shrink-0" aria-hidden="true" />

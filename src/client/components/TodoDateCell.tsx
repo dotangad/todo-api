@@ -16,6 +16,9 @@ export function TodoDateCell({
 
   return (
     <DateTimePicker
+      style={{
+        setClass: kind === 'due' ? 'text-red-500 font-bold uppercase' : '',
+      }}
       label={`${label} for ${todo.title}`}
       date={todo[dateField] ?? ''}
       time={todo[timeField] ?? ''}

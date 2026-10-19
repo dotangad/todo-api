@@ -1,16 +1,23 @@
 import { updateTodo } from '../actions'
 import { dayLabel, weekDays } from '../dates'
-import { saving, visibleTodos } from '../state'
+import { boardWeek, saving, visibleTodos } from '../state'
+import { AnimatedList } from './AnimatedList'
 import { TodoCard } from './TodoCard'
 
 export function TodoBoard() {
   const todos = visibleTodos.value
-  console.log(todos.map((x) => x.scheduleTime))
+  const days = weekDays(
+    boardWeek.value ? new Date(`${boardWeek.value}T12:00:00`) : undefined,
+  )
+
   return (
     <div class="board-scroll">
       <section class="board" aria-label="Scheduled todos board">
-        {weekDays().map((day) => {
-          const scheduled = todos.filter((todo) => todo.scheduleDate === day)
+        {days.map((day) => {
+          const scheduled = todos.filter(
+            (todo) => todo.scheduleDate === day && todo.dueDate !== day,
+          )
+          const due = todos.filter((todo) => todo.dueDate === day)
           return (
             <section
               key={day}
@@ -30,9 +37,12 @@ export function TodoBoard() {
             >
               <header>
                 <strong>{dayLabel(day)}</strong>
-                <span>{scheduled.length}</span>
+                <span>{scheduled.length + due.length}</span>
               </header>
-              <div class="drop-zone">
+              <AnimatedList class="drop-zone">
+                {due.map((todo) => (
+                  <TodoCard key={todo.id} todo={todo} draggable={false} />
+                ))}
                 {/* TODOs without a scheduleTime are displayed below scheduled TODOs */}
                 {scheduled
                   .filter((x) => !!x.scheduleTime)
@@ -44,7 +54,7 @@ export function TodoBoard() {
                   .map((todo) => (
                     <TodoCard key={todo.id} todo={todo} />
                   ))}
-              </div>
+              </AnimatedList>
             </section>
           )
         })}

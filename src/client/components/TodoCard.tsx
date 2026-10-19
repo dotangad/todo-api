@@ -6,13 +6,23 @@ import { openEditor, saving } from '../state'
 import type { Todo } from '../types'
 import { useCardDrag } from '../useCardDrag'
 
-export function TodoCard({ todo }: { todo: Todo }) {
-  const { dragging, handlers } = useCardDrag(todo.id)
+export function TodoCard({
+  todo,
+  draggable = true,
+}: {
+  todo: Todo
+  draggable?: boolean
+}) {
+  const { dragging, handlers } = useCardDrag(todo.id, draggable)
   return (
     <article
       {...handlers}
-      class={cn('card', dragging && 'opacity-[0.35]')}
-      draggable={!saving.value}
+      class={cn(
+        'card',
+        !draggable && 'cursor-default touch-auto',
+        dragging && 'opacity-[0.35]',
+      )}
+      draggable={draggable && !saving.value}
     >
       <div class="card-top">
         <div class="name-cell">

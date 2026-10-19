@@ -1,7 +1,7 @@
 import { errorMessage, saving, todos } from './state'
 import type { Todo, TodoChanges, TodoInput } from './types'
 
-async function api<T>(path: string, options?: RequestInit): Promise<T> {
+export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...options,
     headers: { 'content-type': 'application/json', ...options?.headers },
@@ -9,6 +9,10 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const body = await response.json().catch(() => null)
   if (!response.ok) throw new Error(body?.error?.message ?? 'Request failed.')
   return body as T
+}
+
+export async function refreshTodos() {
+  todos.value = await api<Todo[]>('/api/todos?includeSubtodos=true')
 }
 
 // Keep writes serialized and refresh from the server after each successful change.
@@ -19,7 +23,7 @@ async function mutate(path: string, method: string, body?: TodoChanges) {
   errorMessage.value = ''
   try {
     await api(path, { method, body: body ? JSON.stringify(body) : undefined })
-    todos.value = await api<Todo[]>('/api/todos?includeSubtodos=true')
+    await refreshTodos()
     return true
   } catch (error) {
     errorMessage.value =

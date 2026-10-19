@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { html } from 'hono/html'
 import {
   createTodo,
+  db,
   deleteTodo,
   getTodo,
   listTags,
@@ -20,6 +21,7 @@ import {
   startFocus,
   stopFocus,
 } from './server/focus'
+import { createSqlRoutes } from './server/sqlConsole'
 import { Layout, TodoPage } from './server/views'
 
 const app = new Hono()
@@ -261,5 +263,7 @@ app.delete('/api/todos/:id', (c) =>
 )
 
 app.get('/api/tags', (c) => c.json(listTags()))
+
+app.route('/api/sql', createSqlRoutes(db))
 
 export default app

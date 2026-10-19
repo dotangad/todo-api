@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createTodo, deleteTodo, updateTodo } from '../src/client/actions'
 import { dateKey, weekDays } from '../src/client/dates'
 import {
+  boardWeek,
   clearFilters,
   editorId,
   errorMessage,
@@ -9,6 +10,7 @@ import {
   flatTodos,
   saving,
   sortMode,
+  statusMode,
   tagFilter,
   tagMatch,
   tags,
@@ -39,6 +41,7 @@ function todo(id: string, overrides: Partial<Todo> = {}): Todo {
 
 beforeEach(() => {
   todos.value = []
+  boardWeek.value = null
   clearFilters()
   errorMessage.value = ''
   saving.value = false
@@ -108,6 +111,33 @@ describe('frontend state', () => {
     expect(tagMatch.value).toBe('all')
     expect(visibleTodos.value).toHaveLength(3)
     expect(sortMode.value).toBe('created')
+  })
+
+  test('filters root todos by completion status alongside tags and resets on clear', () => {
+    todos.value = [
+      todo('open-work', { tags: ['work'] }),
+      todo('done-work', { completed: true, tags: ['work'] }),
+      todo('done-home', { completed: true, tags: ['home'] }),
+      todo('child', { completed: true, parentId: 'open-work' }),
+    ]
+    statusMode.value = 'open'
+    expect(visibleTodos.value.map((item) => item.id)).toEqual(['open-work'])
+    statusMode.value = 'done'
+    expect(visibleTodos.value.map((item) => item.id)).toEqual([
+      'done-work',
+      'done-home',
+    ])
+    tagFilter.value = ['work']
+    expect(visibleTodos.value.map((item) => item.id)).toEqual(['done-work'])
+    boardWeek.value = '2027-01-03'
+    clearFilters()
+    expect(boardWeek.value).toBe('2027-01-03')
+    expect(statusMode.value).toBe('all')
+    expect(visibleTodos.value.map((item) => item.id)).toEqual([
+      'open-work',
+      'done-work',
+      'done-home',
+    ])
   })
 
   test('sorts by scheduled date and time in both directions, with date-only first and missing dates last', () => {

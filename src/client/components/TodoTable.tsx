@@ -2,6 +2,7 @@ import { updateTodo } from '../actions'
 import { cn } from '../cn'
 import { openEditor, saving, visibleTodos } from '../state'
 import type { Todo } from '../types'
+import { AnimatedList } from './AnimatedList'
 import { TodoDateCell } from './TodoDateCell'
 
 function TodoRow({ todo }: { todo: Todo }) {
@@ -61,14 +62,16 @@ export function TodoTable() {
         <span>Due</span>
         <span>Tags</span>
       </div>
-      {visibleTodos.value.map((todo) => (
-        <TodoRow key={todo.id} todo={todo} />
-      ))}
-      {!visibleTodos.value.length && (
-        <p class="empty">
-          No matching todos. Create one or clear your filters.
-        </p>
-      )}
+      <AnimatedList>
+        {visibleTodos.value.map((todo) => (
+          <TodoRow key={todo.id} todo={todo} />
+        ))}
+        {!visibleTodos.value.length && (
+          <p key="empty" class="empty">
+            No matching todos. Create one or clear your filters.
+          </p>
+        )}
+      </AnimatedList>
     </section>
   )
 }
