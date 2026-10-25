@@ -22,17 +22,17 @@ beforeEach(() => {
       tag_id TEXT REFERENCES tags(id) ON DELETE CASCADE,
       PRIMARY KEY(todo_id,tag_id)
     );
-    CREATE TABLE focus_state (selected_ids TEXT, completed_todos TEXT);
-    CREATE TABLE focus_events (kind TEXT);
-    CREATE TABLE work_sessions (completed_todos TEXT);
+    CREATE TABLE unrelated_state (selected_ids TEXT, completed_todos TEXT);
+    CREATE TABLE unrelated_events (kind TEXT);
+    CREATE TABLE unrelated_sessions (completed_todos TEXT);
     INSERT INTO todos(id,title,created_at,updated_at) VALUES ('root','Root','created','updated');
     INSERT INTO todos(id,title,parent_id,created_at,updated_at) VALUES ('child','Child','root','created','updated');
     INSERT INTO todos(id,title,parent_id,created_at,updated_at) VALUES ('grandchild','Grandchild','child','created','updated');
     INSERT INTO tags VALUES ('tag','work');
     INSERT INTO todo_tags VALUES ('root','tag'),('child','tag'),('grandchild','tag');
-    INSERT INTO focus_state VALUES ('["root"]','[]');
-    INSERT INTO focus_events VALUES ('start');
-    INSERT INTO work_sessions VALUES ('[]');
+    INSERT INTO unrelated_state VALUES ('["root"]','[]');
+    INSERT INTO unrelated_events VALUES ('start');
+    INSERT INTO unrelated_sessions VALUES ('[]');
   `)
   service = createSqlConsole(db)
 })
@@ -109,22 +109,22 @@ describe('console SQL service', () => {
     expect(dump(db)).toEqual(before)
   })
 
-  test('undo restores cascading descendants and tag associations without touching focus', () => {
+  test('undo restores cascading descendants and tag associations without touching unrelated tables', () => {
     const before = dump(db)
     const token = service.execute("DELETE FROM todos WHERE id='root'").undoToken
     expect(db.query('SELECT * FROM todos').all()).toEqual([])
     expect(db.query('SELECT * FROM todo_tags').all()).toEqual([])
-    db.exec("INSERT INTO focus_events VALUES ('stop')")
+    db.exec("INSERT INTO unrelated_events VALUES ('stop')")
     service.undo(token)
     expect(dump(db)).toEqual(before)
-    expect(db.query('SELECT * FROM focus_state').all()).toEqual([
+    expect(db.query('SELECT * FROM unrelated_state').all()).toEqual([
       { selected_ids: '["root"]', completed_todos: '[]' },
     ])
-    expect(db.query('SELECT * FROM focus_events').all()).toEqual([
+    expect(db.query('SELECT * FROM unrelated_events').all()).toEqual([
       { kind: 'start' },
       { kind: 'stop' },
     ])
-    expect(db.query('SELECT * FROM work_sessions').all()).toEqual([
+    expect(db.query('SELECT * FROM unrelated_sessions').all()).toEqual([
       { completed_todos: '[]' },
     ])
     expect(db.query('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 })
@@ -145,7 +145,7 @@ describe('console SQL service', () => {
     expect(dump(db)).toEqual(before)
   })
 
-  test('refuses to overwrite later REST or focus completion edits', () => {
+  test('refuses to overwrite later REST edits', () => {
     const result = service.execute("UPDATE todos SET title='Changed'")
     db.exec("UPDATE todos SET completed=1 WHERE id='child'")
     const current = dump(db)
@@ -194,7 +194,7 @@ describe('console SQL service', () => {
       'PRAGMA foreign_keys=OFF',
       "ATTACH DATABASE ':memory:' AS other",
       'VACUUM',
-      'SELECT * FROM focus_state',
+      'SELECT * FROM unrelated_state',
       'SELECT * FROM main.sqlite_schema',
       'SELECT * FROM temp.todos',
       "SELECT * FROM pragma_table_info('todos')",
@@ -209,7 +209,7 @@ describe('console SQL service', () => {
       'WITH RECURSIVE x(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM x) SELECT * FROM x',
       'WITH x(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM x) SELECT * FROM x',
       'WITH todos AS (SELECT 1) SELECT * FROM todos',
-      'SELECT * FROM focus_state WHERE EXISTS (WITH focus_state AS (SELECT 1) SELECT 1)',
+      'SELECT * FROM unrelated_state WHERE EXISTS (WITH unrelated_state AS (SELECT 1) SELECT 1)',
       'UPDATE OR ROLLBACK todos SET completed=3',
     ])
       expect(() => service.execute(query), query).toThrow()

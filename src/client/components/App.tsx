@@ -42,9 +42,6 @@ export function App() {
           <h1>Todos</h1>
         </div>
         <div class="flex items-center gap-2">
-          <a href="/focus" class="topbar-action topbar-action--secondary">
-            Focus mode
-          </a>
           <button
             class="new-button topbar-action"
             type="button"

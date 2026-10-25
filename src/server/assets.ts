@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { Manifest } from 'vite'
 
-export type ClientEntry = 'src/client/main.ts' | 'src/client/focus.tsx'
+export type ClientEntry = 'src/client/main.ts'
 
 export function assets(entryName: ClientEntry = 'src/client/main.ts') {
   if (process.env.NODE_ENV !== 'production')

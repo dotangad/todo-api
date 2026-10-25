@@ -12,6 +12,6 @@ export default defineConfig({
     outDir: 'public',
     emptyOutDir: true,
     manifest: true,
-    rolldownOptions: { input: ['src/client/main.ts', 'src/client/focus.tsx'] },
+    rolldownOptions: { input: ['src/client/main.ts'] },
   },
 })

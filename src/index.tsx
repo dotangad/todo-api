@@ -11,16 +11,6 @@ import {
   type TodoPatch,
   updateTodo,
 } from './server/database'
-import {
-  completeFocusTodo,
-  getFocus,
-  listFocusEvents,
-  listWorkSessions,
-  resetFocus,
-  selectFocusTasks,
-  startFocus,
-  stopFocus,
-} from './server/focus'
 import { createSqlRoutes } from './server/sqlConsole'
 import { Layout, TodoPage } from './server/views'
 
@@ -125,68 +115,7 @@ app.get('/', (c) =>
     )}`,
   ),
 )
-app.get('/focus', (c) =>
-  c.html(
-    html`<!doctype html>${(
-      <Layout title="Focus · Todos" entry="src/client/focus.tsx">
-        <main data-focus-app class="min-h-screen bg-[#252525]" />
-      </Layout>
-    )}`,
-  ),
-)
 app.get('/healthcheck', (c) => c.text('OK'))
-
-const focusError = (error: unknown) =>
-  invalid(error instanceof Error ? error.message : 'Invalid focus action.')
-
-app.get('/api/focus', (c) => c.json(getFocus()))
-app.get('/api/focus/events', (c) => c.json(listFocusEvents()))
-app.get('/api/focus/sessions', (c) => c.json(listWorkSessions()))
-app.put('/api/focus/tasks', async (c) => {
-  const body = await c.req.json().catch(() => null)
-  if (
-    !body ||
-    !Array.isArray(body.ids) ||
-    body.ids.some((id: unknown) => typeof id !== 'string')
-  )
-    return c.json(invalid('ids must be an array of todo IDs.'), 400)
-  try {
-    return c.json(selectFocusTasks(body.ids))
-  } catch (error) {
-    return c.json(focusError(error), 400)
-  }
-})
-app.post('/api/focus/start', (c) => {
-  try {
-    return c.json(startFocus())
-  } catch (error) {
-    return c.json(focusError(error), 400)
-  }
-})
-app.post('/api/focus/stop', (c) => {
-  try {
-    return c.json(stopFocus())
-  } catch (error) {
-    return c.json(focusError(error), 400)
-  }
-})
-app.post('/api/focus/reset', (c) => {
-  try {
-    return c.json(resetFocus())
-  } catch (error) {
-    return c.json(focusError(error), 400)
-  }
-})
-app.patch('/api/focus/todos/:id', async (c) => {
-  const body = await c.req.json().catch(() => null)
-  if (typeof body?.completed !== 'boolean')
-    return c.json(invalid('completed must be a boolean.'), 400)
-  try {
-    return c.json(completeFocusTodo(c.req.param('id'), body.completed))
-  } catch (error) {
-    return c.json(focusError(error), 400)
-  }
-})
 
 app.get('/api/todos', (c) => {
   const query = c.req.query()

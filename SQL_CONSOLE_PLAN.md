@@ -69,7 +69,7 @@ For this small database, use before/after snapshots of the todo-related tables r
 
 Keep one server-side in-memory undo record for v1. Tokens prevent a stale tab from undoing a newer query. Undo availability does not survive a server restart or browser reload; document that limitation. SELECT responses must not hand another caller a token created by a write; retain tokens locally only from that caller's successful writes.
 
-Do not snapshot or restore the whole SQLite database. Focus timer state/history must remain untouched. Currently focus IDs are stored as JSON, not cascading foreign keys; include a regression test confirming undo leaves focus tables unchanged.
+Do not snapshot or restore the whole SQLite database; snapshot only the todo-related tables. Include a regression test confirming undo leaves unrelated tables unchanged.
 
 ## 4. Tests and verification
 
@@ -81,7 +81,7 @@ Cover:
 - Failed queries roll back and retain the previous undo point.
 - Reads/no-ops preserve undo; a second successful write replaces it.
 - Undo restores exact values, timestamps, descendants, and tag links.
-- Stale tokens, repeated undo, restart/no-record behavior, and intervening CRUD/focus completion edits.
+- Stale tokens, repeated undo, restart/no-record behavior, and intervening CRUD edits.
 - Rejected schema/transaction/unrelated-table commands, multi-statements, comments/quoted semicolons, malicious function calls, cycles, and bad requests/origins.
 - Client `console.table` output, todo refresh after queries and undo, refresh failures after commits, and overlapping operations.
 
@@ -91,4 +91,4 @@ Inspect the Vite output/manifest and browser Network panel: the SQL console impl
 
 ## 5. Documentation
 
-Update `README.md` with console examples, supported SQL scope, physical schema notes, RETURNING usage, explicit timestamp/descendant handling, undo/conflict semantics, and private-access requirements. No new visible UI is required, and `/focus` integration is out of scope for v1.
+Update `README.md` with console examples, supported SQL scope, physical schema notes, RETURNING usage, explicit timestamp/descendant handling, undo/conflict semantics, and private-access requirements. No new visible UI is required.

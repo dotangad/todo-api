@@ -169,7 +169,7 @@ cascading descendant deletions and tag links. Reads, failures, and no-op writes
 preserve that undo point. There is one undo level, no redo, and availability is
 lost on browser reload or server restart. A newer SQL write replaces the undo
 point; intervening UI/API/other-tab changes cause undo to refuse rather than
-clobber them. Focus timer state/history is never restored. Operations in the same
+clobber them. Operations in the same
 page are guarded against overlap. If a write succeeds but refresh fails, do not
 repeat it: refresh the page instead. A lost network response can also leave the
 commit outcome uncertain; inspect current data before retrying.
@@ -192,26 +192,6 @@ TODO_SQL_TRUSTED_ORIGINS=https://YOUR-TAILNET-HOST:3011
 Restart the service after changing its environment. Forwarded headers are not
 trusted for authorization. Unconfigured external origins and requests without an
 Origin header are rejected, including ordinary curl requests.
-
-## Focus mode
-
-Open `/focus` from the main page. The monochrome dark-mode picker offers only
-top-level tasks scheduled for today (in the browser's local time); their subtasks
-appear below them with independent checkboxes. The stopwatch displays hours and
-minutes (duration is stored in milliseconds). Start and stop events are persisted,
-even across reloads. Reset automatically stops a running timer, records that stop
-and the reset, and saves a work session with the elapsed working time and the tasks
-marked complete through focus mode since the first start. Unchecking a task removes
-it from that session's completed list. The page shows only today's events and
-sessions (by end time); older history remains in the API. Task selection can be
-changed after resetting the current session. The focus state is shared by this
-single-user installation.
-
-Focus API: `GET /api/focus` (current state and full history),
-`PUT /api/focus/tasks` (`{ "ids": ["root-todo-id"] }`),
-`POST /api/focus/start`, `POST /api/focus/stop`, `POST /api/focus/reset`,
-`PATCH /api/focus/todos/:id` (`{ "completed": true }`), and
-`GET /api/focus/events` / `GET /api/focus/sessions` for full history.
 
 ## Todo fields
 
