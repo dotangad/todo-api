@@ -8,6 +8,7 @@ import {
   updateNote,
 } from '../notes'
 import { Dialog } from './Dialog'
+import { NoteRichText } from './NoteRichText'
 
 export function NoteForm({
   note,
@@ -21,13 +22,14 @@ export function NoteForm({
   const [draft, setDraft] = useState<NoteInput>({
     title: note?.title ?? '',
     content: note?.content ?? '',
+    contentHtml: note?.contentHtml ?? null,
     color: note?.color ?? 'default',
     scheduleDate: note?.scheduleDate ?? null,
   })
   const [confirmDelete, setConfirmDelete] = useState(false)
   const dirty = note
     ? Object.entries(draft).some(
-        ([key, value]) => note[key as keyof NoteInput] !== value,
+        ([key, value]) => (note[key as keyof NoteInput] ?? null) !== value,
       )
     : !!(draft.title.trim() || draft.content.trim())
   const change = (patch: Partial<NoteInput>) =>
@@ -68,14 +70,11 @@ export function NoteForm({
           value={draft.title}
           onInput={(event) => change({ title: event.currentTarget.value })}
         />
-        <textarea
-          class="note-content-input"
-          aria-label="Note content"
-          placeholder="Take a note…"
-          autoFocus
-          rows={modal ? 10 : 4}
-          value={draft.content}
-          onInput={(event) => change({ content: event.currentTarget.value })}
+        <NoteRichText
+          content={draft.content}
+          contentHtml={draft.contentHtml}
+          disabled={noteSaving.value}
+          onChange={change}
         />
         <div class="note-options">
           <fieldset class="note-colors" aria-label="Note color">

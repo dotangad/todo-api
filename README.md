@@ -117,7 +117,16 @@ an expandable composer, variable-height colored cards, and a click-to-edit dialo
 Notes are always ordered by last edit (newest first); opening and closing an
 unchanged note does not reorder it. Search is intentionally omitted.
 
-Notes can have a title, text, or both. **Close** saves; **Cancel** discards the draft.
+Notes can have a title, rich text, or both. The formatting toolbar supports bold,
+italic, underline, strikethrough, headings, bullet/numbered lists, quotes, code
+blocks, links, clear formatting, and undo/redo. Standard editor shortcuts such as
+**Ctrl/Cmd+B**, **Ctrl/Cmd+I**, and **Ctrl/Cmd+Z** work too. Formatting is preserved
+in note cards and on the board. The editor loads on demand; existing plain-text
+notes remain literal text until edited. HTML is sanitized on the server and again
+before browser rendering. Links in card previews are non-interactive so clicking
+anywhere on a card still opens its editor.
+
+**Close** saves; **Cancel** discards the draft.
 Closing the editor with Escape or the backdrop also saves. Failed saves keep the
 draft open, and deletion requires confirmation. Notes live in a separate SQLite
 `notes` table, created automatically without changing existing todos.
@@ -128,10 +137,14 @@ Click to edit them in place, drag between days (mouse or touch), or remove the d
 to detach them. Undated notes remain available on `/notes`.
 
 The JSON API supports `GET/POST /api/notes` and `GET/PATCH/DELETE /api/notes/:id`.
-Fields: `title`, `content`, `color` (`default`, `yellow`, `green`, `blue`, `pink`,
+Fields: `title`, `content`, optional `contentHtml`, `color` (`default`, `yellow`, `green`, `blue`, `pink`,
 `purple`), and `scheduleDate` (`YYYY-MM-DD` or `null`). Responses include `id`,
 `createdAt`, and `updatedAt`; listing is newest-edited-first. Dates are validated
-as real calendar dates, and empty notes are rejected.
+as real calendar dates, and empty notes are rejected. When `contentHtml` is a
+string, the server sanitizes it and derives the plain `content` fallback from it.
+A plain `content`-only update clears old HTML; date/color/title-only patches keep
+formatting. Set `contentHtml: null` to return to plain text. Existing databases
+are migrated automatically with a nullable `content_html` column.
 
 ### Styling
 

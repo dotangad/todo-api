@@ -2,6 +2,7 @@ import { CalendarDays, StickyNote } from 'lucide-preact'
 import type { Note } from '../../noteTypes'
 import { noteSaving, openNote } from '../notes'
 import { useCardDrag } from '../useCardDrag'
+import { NoteContent } from './NoteContent'
 
 export function NoteCard({
   note,
@@ -29,7 +30,7 @@ export function NoteCard({
           </span>
         )}
         {note.title && <h2>{note.title}</h2>}
-        {note.content && <p>{note.content}</p>}
+        <NoteContent note={note} />
         {note.scheduleDate && (
           <span class="note-date-chip">
             <CalendarDays size={13} aria-hidden="true" />

@@ -254,6 +254,92 @@ test('notes reject empty content, malformed bodies, invalid colors, and impossib
   await app.request(`/api/notes/${note.id}`, { method: 'DELETE' })
 })
 
+test('rich notes round-trip sanitized HTML and preserve formatting during date-only edits', async () => {
+  const contentHtml =
+    '<h2>Plans</h2><p><strong>Important</strong> &amp; <em>useful</em></p><ul><li><p>First</p></li></ul><p><a href="https://example.com">Reference</a></p>'
+  const response = await request('POST', '/api/notes', {
+    contentHtml,
+    content: 'Untrusted fallback',
+  })
+  expect(response.status).toBe(201)
+  const note = await response.json()
+  expect(note.contentHtml).toBe(contentHtml)
+  expect(note.content).toContain('Plans\nImportant & useful\nFirst')
+  expect(note.content).not.toContain('Untrusted')
+  const scheduled = await (
+    await request('PATCH', `/api/notes/${note.id}`, {
+      scheduleDate: '2026-10-13',
+    })
+  ).json()
+  expect(scheduled.contentHtml).toBe(contentHtml)
+  expect(scheduled.content).toBe(note.content)
+  const noop = await (
+    await request('PATCH', `/api/notes/${note.id}`, { contentHtml })
+  ).json()
+  expect(noop.updatedAt).toBe(scheduled.updatedAt)
+  const page = await (await app.request('/notes')).text()
+  expect(page).toContain('<h2>Plans</h2>')
+  expect(page).toContain('<strong>Important</strong>')
+  const legacy = await (
+    await request('PATCH', `/api/notes/${note.id}`, {
+      content: '<b>Literal text</b>',
+    })
+  ).json()
+  expect(legacy.contentHtml).toBeNull()
+  expect(legacy.content).toBe('<b>Literal text</b>')
+  const rich = await (
+    await request('PATCH', `/api/notes/${note.id}`, {
+      contentHtml: '<p><u>New</u></p>',
+    })
+  ).json()
+  expect(rich.content).toBe('New')
+  const cleared = await (
+    await request('PATCH', `/api/notes/${note.id}`, { contentHtml: null })
+  ).json()
+  expect(cleared.contentHtml).toBeNull()
+  expect(cleared.content).toBe('New')
+  await app.request(`/api/notes/${note.id}`, { method: 'DELETE' })
+})
+
+test('rich note writes reject empty or invalid HTML and strip unsafe markup', async () => {
+  for (const contentHtml of [
+    42,
+    {},
+    [],
+    '<p><br></p>',
+    '<p>&nbsp;</p>',
+    '<script>alert(1)</script>',
+  ]) {
+    expect(
+      (
+        await request('POST', '/api/notes', {
+          content: 'Do not trust this',
+          contentHtml,
+        })
+      ).status,
+    ).toBe(400)
+  }
+  const response = await request('POST', '/api/notes', {
+    contentHtml:
+      '<p onclick="alert(1)"><strong>Safe</strong><img src=x onerror=alert(1)></p><script>alert(1)</script><a href="javascript:alert(1)">Link</a>',
+  })
+  expect(response.status).toBe(201)
+  const note = await response.json()
+  expect(note.contentHtml).toBe('<p><strong>Safe</strong></p><a>Link</a>')
+  expect(note.content).toBe('Safe\nLink')
+  expect(
+    (
+      await request('PATCH', `/api/notes/${note.id}`, {
+        contentHtml: '<p></p>',
+      })
+    ).status,
+  ).toBe(400)
+  expect(await (await app.request(`/api/notes/${note.id}`)).json()).toEqual(
+    note,
+  )
+  await app.request(`/api/notes/${note.id}`, { method: 'DELETE' })
+})
+
 test('/notes and the board bootstrap stored notes safely', async () => {
   const note = await (
     await request('POST', '/api/notes', {

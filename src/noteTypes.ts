@@ -11,6 +11,8 @@ export type NoteColor = (typeof noteColors)[number]
 export type NoteInput = {
   title: string
   content: string
+  // Null/absent preserves legacy plain text, including literal HTML characters.
+  contentHtml?: string | null
   color: NoteColor
   scheduleDate: string | null
 }

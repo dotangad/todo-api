@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { type Note, type NoteInput, noteColors } from '../noteTypes'
 import { db } from './database'
+import { noteHtmlText, sanitizeNoteHtml } from './noteHtml'
 
 db.exec(`create table if not exists notes (
   id text primary key,
@@ -13,7 +14,13 @@ db.exec(`create table if not exists notes (
 );
 create index if not exists notes_updated_at on notes(updated_at desc);`)
 
-const columns = `id, title, content, color, schedule_date as scheduleDate,
+const noteColumns = db.query('pragma table_info(notes)').all() as {
+  name: string
+}[]
+if (!noteColumns.some((column) => column.name === 'content_html'))
+  db.exec('alter table notes add column content_html text')
+
+const columns = `id, title, content, content_html as contentHtml, color, schedule_date as scheduleDate,
   created_at as createdAt, updated_at as updatedAt`
 
 export function listNotes() {
@@ -48,16 +55,35 @@ function parseNote(body: unknown, existing?: Note): NoteInput {
     ? {
         title: existing.title,
         content: existing.content,
+        contentHtml: existing.contentHtml ?? null,
         color: existing.color,
         scheduleDate: existing.scheduleDate,
       }
-    : { title: '', content: '', color: 'default', scheduleDate: null }
+    : {
+        title: '',
+        content: '',
+        contentHtml: null,
+        color: 'default',
+        scheduleDate: null,
+      }
   for (const field of ['title', 'content'] as const) {
     if (raw[field] !== undefined) {
       if (typeof raw[field] !== 'string')
         throw new Error(`${field} must be a string.`)
       input[field] = raw[field]
     }
+  }
+  if (raw.contentHtml !== undefined) {
+    if (raw.contentHtml !== null && typeof raw.contentHtml !== 'string')
+      throw new Error('contentHtml must be a string or null.')
+    input.contentHtml =
+      raw.contentHtml === null ? null : sanitizeNoteHtml(raw.contentHtml)
+    // HTML is authoritative; never trust a conflicting plain-text fallback.
+    if (input.contentHtml !== null)
+      input.content = noteHtmlText(input.contentHtml)
+  } else if (raw.content !== undefined) {
+    // Older clients replacing plain text must not leave stale formatting behind.
+    input.contentHtml = null
   }
   if (!input.title.trim() && !input.content.trim())
     throw new Error('A note needs a title or content.')
@@ -94,11 +120,12 @@ export function createNoteRoutes() {
       const input = parseNote(await c.req.json().catch(() => null))
       const id = crypto.randomUUID()
       const now = nextEditTime()
-      db.query(`insert into notes (id, title, content, color, schedule_date, created_at, updated_at)
-        values (?, ?, ?, ?, ?, ?, ?)`).run(
+      db.query(`insert into notes (id, title, content, content_html, color, schedule_date, created_at, updated_at)
+        values (?, ?, ?, ?, ?, ?, ?, ?)`).run(
         id,
         input.title,
         input.content,
+        input.contentHtml ?? null,
         input.color,
         input.scheduleDate,
         now,
@@ -125,10 +152,11 @@ export function createNoteRoutes() {
       ) {
         const now = nextEditTime()
         db.query(
-          `update notes set title = ?, content = ?, color = ?, schedule_date = ?, updated_at = ? where id = ?`,
+          `update notes set title = ?, content = ?, content_html = ?, color = ?, schedule_date = ?, updated_at = ? where id = ?`,
         ).run(
           input.title,
           input.content,
+          input.contentHtml ?? null,
           input.color,
           input.scheduleDate,
           now,

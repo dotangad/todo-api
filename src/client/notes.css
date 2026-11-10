@@ -190,8 +190,7 @@
   padding: 0;
   border: 0;
 }
-.note-title-input,
-.note-content-input {
+.note-title-input {
   display: block;
   width: 100%;
   border: 0;
@@ -205,14 +204,7 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
-.note-content-input {
-  resize: vertical;
-  min-height: 6rem;
-  max-height: 50vh;
-  line-height: 1.6;
-}
-.note-title-input:focus-visible,
-.note-content-input:focus-visible {
+.note-title-input:focus-visible {
   box-shadow: 0 1px #0003;
 }
 .note-options {

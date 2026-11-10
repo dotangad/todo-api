@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'hono/jsx'
 import type { Note } from '../noteTypes'
 import { assets, type ClientEntry } from './assets'
 import type { Todo } from './database'
+import { sanitizeNoteHtml } from './noteHtml'
 
 export function Layout({
   children,
@@ -44,7 +45,16 @@ export function NotesPage({ notes }: { notes: Note[] }) {
         {notes.map((note) => (
           <article class={`note-card note-color-${note.color}`}>
             {note.title && <h2>{note.title}</h2>}
-            <p>{note.content}</p>
+            {note.contentHtml != null ? (
+              <div
+                class="note-rich-preview"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeNoteHtml(note.contentHtml),
+                }}
+              />
+            ) : (
+              <p>{note.content}</p>
+            )}
             {note.scheduleDate && <time>{note.scheduleDate}</time>}
           </article>
         ))}
