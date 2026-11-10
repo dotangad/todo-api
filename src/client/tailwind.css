@@ -3,6 +3,7 @@
 /* Keep the existing browser defaults: intentionally omit Tailwind Preflight. */
 @import "tailwindcss/theme.css" layer(theme);
 @import "./style.css" layer(components);
+@import "./notes.css" layer(components);
 @import "tailwindcss/utilities.css" layer(utilities) source("..");
 
 /* Match the existing UI rather than introducing a new palette. */

@@ -1,7 +1,9 @@
 import { updateTodo } from '../actions'
 import { dayLabel, weekDays } from '../dates'
+import { noteDragType, noteSaving, orderedNotes, updateNote } from '../notes'
 import { boardWeek, saving, visibleTodos } from '../state'
 import { AnimatedList } from './AnimatedList'
+import { NoteCard } from './NoteCard'
 import { TodoCard } from './TodoCard'
 
 export function TodoBoard() {
@@ -18,6 +20,9 @@ export function TodoBoard() {
             (todo) => todo.scheduleDate === day && todo.dueDate !== day,
           )
           const due = todos.filter((todo) => todo.dueDate === day)
+          const dayNotes = orderedNotes.value.filter(
+            (note) => note.scheduleDate === day,
+          )
           return (
             <section
               key={day}
@@ -25,21 +30,30 @@ export function TodoBoard() {
               aria-label={dayLabel(day)}
               data-drop-day={day}
               onDragOver={(event) => {
-                if (saving.value) return
+                if (saving.value || noteSaving.value) return
                 event.preventDefault()
                 if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
               }}
               onDrop={(event) => {
                 event.preventDefault()
+                if (saving.value || noteSaving.value) return
+                const noteId = event.dataTransfer?.getData(noteDragType)
+                if (noteId) {
+                  void updateNote(noteId, { scheduleDate: day })
+                  return
+                }
                 const id = event.dataTransfer?.getData('text/plain')
                 if (id) void updateTodo(id, { scheduleDate: day })
               }}
             >
               <header>
                 <strong>{dayLabel(day)}</strong>
-                <span>{scheduled.length + due.length}</span>
+                <span>{scheduled.length + due.length + dayNotes.length}</span>
               </header>
               <AnimatedList class="drop-zone">
+                {dayNotes.map((note) => (
+                  <NoteCard key={note.id} note={note} board />
+                ))}
                 {due.map((todo) => (
                   <TodoCard key={todo.id} todo={todo} draggable={false} />
                 ))}

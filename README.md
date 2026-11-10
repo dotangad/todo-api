@@ -110,6 +110,29 @@ Run `bun test` for state/action tests, `bun run typecheck` for TypeScript, and
 `bun run build` for the production bundle. The client uses Preact's JSX runtime;
 server views retain Hono's JSX runtime. No React compatibility layer is needed.
 
+### Notes
+
+Open **Notes** from the todo header, or visit `/notes`. The Keep-style page has
+an expandable composer, variable-height colored cards, and a click-to-edit dialog.
+Notes are always ordered by last edit (newest first); opening and closing an
+unchanged note does not reorder it. Search is intentionally omitted.
+
+Notes can have a title, text, or both. **Close** saves; **Cancel** discards the draft.
+Closing the editor with Escape or the backdrop also saves. Failed saves keep the
+draft open, and deletion requires confirmation. Notes live in a separate SQLite
+`notes` table, created automatically without changing existing todos.
+
+Each note has one optional **Board date**. Dated notes appear in that day's kanban
+column, independently of todo status/tag filters, and count toward the day's total.
+Click to edit them in place, drag between days (mouse or touch), or remove the date
+to detach them. Undated notes remain available on `/notes`.
+
+The JSON API supports `GET/POST /api/notes` and `GET/PATCH/DELETE /api/notes/:id`.
+Fields: `title`, `content`, `color` (`default`, `yellow`, `green`, `blue`, `pink`,
+`purple`), and `scheduleDate` (`YYYY-MM-DD` or `null`). Responses include `id`,
+`createdAt`, and `updatedAt`; listing is newest-edited-first. Dates are validated
+as real calendar dates, and empty notes are rejected.
+
 ### Styling
 
 Tailwind CSS v4 runs through `@tailwindcss/vite` in development and production.

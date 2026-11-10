@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'hono/jsx'
+import type { Note } from '../noteTypes'
 import { assets, type ClientEntry } from './assets'
 import type { Todo } from './database'
 
@@ -26,12 +27,45 @@ export function Layout({
   )
 }
 
-export function TodoPage({ todos }: { todos: Todo[] }) {
+export function NotesPage({ notes }: { notes: Note[] }) {
+  return (
+    <main
+      class="app-shell notes-shell"
+      data-todo-app
+      data-page="notes"
+      data-initial-notes={JSON.stringify(notes)}
+    >
+      <header class="topbar">
+        <h1>Notes</h1>
+        <a href="/">Todos</a>
+      </header>
+      <p>Take a note…</p>
+      <section class="notes-grid" aria-label="Notes, last edited first">
+        {notes.map((note) => (
+          <article class={`note-card note-color-${note.color}`}>
+            {note.title && <h2>{note.title}</h2>}
+            <p>{note.content}</p>
+            {note.scheduleDate && <time>{note.scheduleDate}</time>}
+          </article>
+        ))}
+      </section>
+    </main>
+  )
+}
+
+export function TodoPage({
+  todos,
+  notes = [],
+}: {
+  todos: Todo[]
+  notes?: Note[]
+}) {
   return (
     <main
       class="app-shell"
       data-todo-app
       data-initial-state={JSON.stringify(todos)}
+      data-initial-notes={JSON.stringify(notes)}
     >
       <header class="topbar">
         <div>
@@ -39,6 +73,9 @@ export function TodoPage({ todos }: { todos: Todo[] }) {
           <h1>Todos</h1>
         </div>
         <div class="flex items-center gap-2">
+          <a class="topbar-action topbar-action--secondary" href="/notes">
+            Notes
+          </a>
           <button
             class="new-button topbar-action"
             type="button"

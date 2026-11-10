@@ -11,8 +11,9 @@ import {
   type TodoPatch,
   updateTodo,
 } from './server/database'
+import { createNoteRoutes, listNotes } from './server/notes'
 import { createSqlRoutes } from './server/sqlConsole'
-import { Layout, TodoPage } from './server/views'
+import { Layout, NotesPage, TodoPage } from './server/views'
 
 const app = new Hono()
 const invalid = (message: string) => ({ error: { message } })
@@ -110,11 +111,22 @@ app.get('/', (c) =>
       <Layout>
         <TodoPage
           todos={listTodos({ rootsOnly: true, includeSubtodos: true })}
+          notes={listNotes()}
         />
       </Layout>
     )}`,
   ),
 )
+app.get('/notes', (c) =>
+  c.html(
+    html`<!doctype html>${(
+      <Layout title="Notes">
+        <NotesPage notes={listNotes()} />
+      </Layout>
+    )}`,
+  ),
+)
+app.route('/api/notes', createNoteRoutes())
 app.get('/healthcheck', (c) => c.text('OK'))
 
 app.get('/api/todos', (c) => {

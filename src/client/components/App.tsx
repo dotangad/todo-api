@@ -1,6 +1,7 @@
 import { SquareKanban, TableProperties } from 'lucide-preact'
 import { useEffect } from 'preact/hooks'
 import { isNewTodoHotkey } from '../newTodoHotkey'
+import { noteEditorId, noteError, noteSaving } from '../notes'
 import {
   deleteId,
   editorId,
@@ -11,6 +12,7 @@ import {
 } from '../state'
 import { Filters } from './Filters'
 import { ModalLayer } from './ModalLayer'
+import { NoteEditor } from './NoteEditor'
 import { TodoBoard } from './TodoBoard'
 import { TodoTable } from './TodoTable'
 
@@ -26,6 +28,8 @@ export function App() {
         editorId.value !== null ||
         deleteId.value !== null ||
         saving.value ||
+        noteSaving.value ||
+        noteEditorId.value !== null ||
         document.querySelector('dialog[open]') !== null
       if (!isNewTodoHotkey(event, modalOpen, editableFocused)) return
       event.preventDefault()
@@ -42,6 +46,9 @@ export function App() {
           <h1>Todos</h1>
         </div>
         <div class="flex items-center gap-2">
+          <a class="topbar-action topbar-action--secondary" href="/notes">
+            Notes
+          </a>
           <button
             class="new-button topbar-action"
             type="button"
@@ -84,6 +91,11 @@ export function App() {
             </button>
           </nav>
           <Filters />
+          {!noteEditorId.value && noteError.value && (
+            <span role="alert" class="note-error">
+              {noteError.value}
+            </span>
+          )}
           {!editorId.value && errorMessage.value && (
             <span role="status">{errorMessage.value}</span>
           )}
@@ -91,6 +103,7 @@ export function App() {
         {view.value === 'table' ? <TodoTable /> : <TodoBoard />}
       </div>
       <ModalLayer />
+      <NoteEditor />
     </>
   )
 }

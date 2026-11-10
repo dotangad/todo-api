@@ -2,13 +2,17 @@ import 'vite/modulepreload-polyfill'
 import './tailwind.css'
 import { h, render } from 'preact'
 import { App } from './components/App'
+import { NotesPage } from './components/NotesPage'
+import { notes } from './notes'
 import { todos } from './state'
 import { startUrlSync } from './urlState'
 
 const root = document.querySelector<HTMLElement>('[data-todo-app]')
 if (!root) throw new Error('Todo app root not found.')
 todos.value = JSON.parse(root.dataset.initialState ?? '[]')
-const stopUrlSync = startUrlSync()
+notes.value = JSON.parse(root.dataset.initialNotes ?? '[]')
+const isNotesPage = root.dataset.page === 'notes'
+const stopUrlSync = isNotesPage ? () => {} : startUrlSync()
 
 // Register console-only entry points; no implementation is loaded until invoked.
 const sql: Window['sql'] = (...args) =>
@@ -20,7 +24,7 @@ window.sqlUndo = sqlUndo
 
 // The fallback HTML comes from Hono, so mount rather than hydrate it.
 root.replaceChildren()
-render(h(App, {}), root)
+render(h(isNotesPage ? NotesPage : App, {}), root)
 
 if (import.meta.hot)
   import.meta.hot.dispose(() => {

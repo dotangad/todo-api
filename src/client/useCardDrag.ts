@@ -1,6 +1,7 @@
 import type { JSX } from 'preact'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { updateTodo } from './actions'
+import { noteDragType, noteSaving, updateNote } from './notes'
 import { saving } from './state'
 
 type TouchDrag = {
@@ -10,7 +11,12 @@ type TouchDrag = {
   zone: HTMLElement | null
 }
 
-export function useCardDrag(id: string, enabled = true) {
+export function useCardDrag(
+  id: string,
+  enabled = true,
+  kind: 'todo' | 'note' = 'todo',
+) {
+  const busy = () => saving.value || noteSaving.value
   const [dragging, setDragging] = useState(false)
   const touch = useRef<TouchDrag | null>(null)
   const ignoreClickUntil = useRef(0)
@@ -24,12 +30,15 @@ export function useCardDrag(id: string, enabled = true) {
 
   const handlers: JSX.IntrinsicElements['article'] = {
     onDragStart(event) {
-      if (!enabled || saving.value || !event.dataTransfer) {
+      if (!enabled || busy() || !event.dataTransfer) {
         event.preventDefault()
         return
       }
       event.dataTransfer.effectAllowed = 'move'
-      event.dataTransfer.setData('text/plain', id)
+      event.dataTransfer.setData(
+        kind === 'note' ? noteDragType : 'text/plain',
+        id,
+      )
       setDragging(true)
     },
     onDragEnd() {
@@ -39,9 +48,11 @@ export function useCardDrag(id: string, enabled = true) {
     onPointerDown(event) {
       if (
         !enabled ||
-        saving.value ||
+        busy() ||
         event.pointerType === 'mouse' ||
-        (event.target as HTMLElement).closest('input,button')
+        (event.target as HTMLElement).closest(
+          kind === 'note' ? 'input' : 'input,button',
+        )
       )
         return
       touch.current = {
@@ -78,7 +89,10 @@ export function useCardDrag(id: string, enabled = true) {
       clearTouch()
       if (event.currentTarget.hasPointerCapture(event.pointerId))
         event.currentTarget.releasePointerCapture(event.pointerId)
-      if (day && enabled) void updateTodo(id, { scheduleDate: day })
+      if (day && enabled && !busy())
+        void (kind === 'note' ? updateNote : updateTodo)(id, {
+          scheduleDate: day,
+        })
     },
     onPointerCancel: clearTouch,
     onLostPointerCapture: clearTouch,
