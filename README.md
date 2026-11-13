@@ -146,6 +146,29 @@ A plain `content`-only update clears old HTML; date/color/title-only patches kee
 formatting. Set `contentHtml: null` to return to plain text. Existing databases
 are migrated automatically with a nullable `content_html` column.
 
+### Habits
+
+Open **Habits** from the workspace header or visit `/habits`. Add a habit title,
+then click cells in the monthly completion table to log or undo days. Navigate
+between months or jump back to this month; totals count only the displayed month.
+The table scrolls horizontally on smaller screens, keeping habit names visible.
+Click a habit name to rename it or delete it (with confirmation).
+
+SQLite creates `habits` (`id`, `title`, `created_at`) and `habit_logs`
+(`habit_id`, `date`) automatically. The composite primary key allows only one
+completion per habit per date; deleting a habit cascades to its logs. Dates are
+calendar days (`YYYY-MM-DD`), not timestamps, and the UI starts on the local month.
+
+JSON API:
+- `GET/POST /api/habits`: list habits or create one with `{ "title": "Read daily" }`.
+- `GET/PATCH/DELETE /api/habits/:id`: read, rename with `{ "title": "…" }`, or delete.
+- `PUT /api/habits/:id/logs/:date`: mark a day complete (no body required).
+- `DELETE /api/habits/:id/logs/:date`: undo a completion.
+
+Habit responses include `id`, `title`, `createdAt`, and `logs` (sorted date strings).
+Log writes return the updated habit and are idempotent. Empty titles and invalid
+calendar dates are rejected. Historical days can be logged at any time.
+
 ### Styling
 
 Tailwind CSS v4 runs through `@tailwindcss/vite` in development and production.

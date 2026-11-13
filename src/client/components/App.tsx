@@ -45,7 +45,10 @@ export function App() {
         <div>
           <h1>Todos</h1>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <a class="topbar-action topbar-action--secondary" href="/habits">
+            Habits
+          </a>
           <a class="topbar-action topbar-action--secondary" href="/notes">
             Notes
           </a>

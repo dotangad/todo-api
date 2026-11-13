@@ -17,6 +17,9 @@ export function NotesPage() {
           <h1>Notes</h1>
         </div>
         <nav aria-label="Workspace" class="notes-nav">
+          <a class="topbar-action topbar-action--secondary" href="/habits">
+            Habits
+          </a>
           <a class="topbar-action topbar-action--secondary" href="/">
             Todos
           </a>

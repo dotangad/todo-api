@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'hono/jsx'
+import type { Habit } from '../habitTypes'
 import type { Note } from '../noteTypes'
 import { assets, type ClientEntry } from './assets'
 import type { Todo } from './database'
@@ -28,6 +29,32 @@ export function Layout({
   )
 }
 
+export function HabitsPage({ habits }: { habits: Habit[] }) {
+  return (
+    <main
+      class="app-shell habits-shell"
+      data-todo-app
+      data-page="habits"
+      data-initial-habits={JSON.stringify(habits)}
+    >
+      <header class="topbar">
+        <h1>Habits</h1>
+        <nav aria-label="Workspace">
+          <a href="/">Todos</a> <a href="/notes">Notes</a>
+        </nav>
+      </header>
+      <p>Enable JavaScript to create habits and log completions.</p>
+      <ul>
+        {habits.map((habit) => (
+          <li>
+            {habit.title} — {habit.logs.length} completions
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}
+
 export function NotesPage({ notes }: { notes: Note[] }) {
   return (
     <main
@@ -38,7 +65,9 @@ export function NotesPage({ notes }: { notes: Note[] }) {
     >
       <header class="topbar">
         <h1>Notes</h1>
-        <a href="/">Todos</a>
+        <nav aria-label="Workspace">
+          <a href="/">Todos</a> <a href="/habits">Habits</a>
+        </nav>
       </header>
       <p>Take a note…</p>
       <section class="notes-grid" aria-label="Notes, last edited first">
@@ -83,6 +112,9 @@ export function TodoPage({
           <h1>Todos</h1>
         </div>
         <div class="flex items-center gap-2">
+          <a class="topbar-action topbar-action--secondary" href="/habits">
+            Habits
+          </a>
           <a class="topbar-action topbar-action--secondary" href="/notes">
             Notes
           </a>

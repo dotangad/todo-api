@@ -11,9 +11,10 @@ import {
   type TodoPatch,
   updateTodo,
 } from './server/database'
+import { createHabitRoutes, listHabits } from './server/habits'
 import { createNoteRoutes, listNotes } from './server/notes'
 import { createSqlRoutes } from './server/sqlConsole'
-import { Layout, NotesPage, TodoPage } from './server/views'
+import { HabitsPage, Layout, NotesPage, TodoPage } from './server/views'
 
 const app = new Hono()
 const invalid = (message: string) => ({ error: { message } })
@@ -126,6 +127,16 @@ app.get('/notes', (c) =>
     )}`,
   ),
 )
+app.get('/habits', (c) =>
+  c.html(
+    html`<!doctype html>${(
+      <Layout title="Habits">
+        <HabitsPage habits={listHabits()} />
+      </Layout>
+    )}`,
+  ),
+)
+app.route('/api/habits', createHabitRoutes())
 app.route('/api/notes', createNoteRoutes())
 app.get('/healthcheck', (c) => c.text('OK'))
 
